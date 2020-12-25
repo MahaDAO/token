@@ -18,6 +18,7 @@ contract TokenVesting is Ownable {
 
     event TokensReleased(address token, uint256 amount);
     event TokenVestingRevoked(address token);
+    event BeneficiaryChanged(address old, address beneficiary);
 
     // beneficiary of tokens after they are released
     address private _beneficiary;
@@ -144,6 +145,16 @@ contract TokenVesting is Ownable {
         token.safeTransfer(owner(), refund);
 
         emit TokenVestingRevoked(address(token));
+    }
+
+    /**
+     * @notice Changes the beneficiary
+     * @param bene address of the beneficiary to whom vested tokens are transferred
+     */
+    function changeBeneficiary(address bene) public onlyOwner {
+        require(bene != address(0));
+        emit BeneficiaryChanged(_beneficiary, bene);
+        _beneficiary = bene;
     }
 
     /**
