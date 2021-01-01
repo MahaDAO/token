@@ -1,12 +1,11 @@
-const {
-    BN,
-    increaseTime,
-    expectEvent,
-    assertRevert,
-} = require('@openzeppelin/test-helpers');
-
 const MahaToken = artifacts.require('MahaToken')
 const TeamVesting = artifacts.require('TeamVesting')
+
+const day0 = 1639699200
+const jan172022 = (new Date("2022-01-17")).getTime() / 1000
+const dec172021 = (new Date("2021-12-17")).getTime() / 1000
+const dec182024 = (new Date("2024-12-17")).getTime() / 1000
+const threeYearsSeconds = 86400 * 365 * 3
 
 
 contract('TeamVesting', function (accounts) {
@@ -23,9 +22,9 @@ contract('TeamVesting', function (accounts) {
         assert.equal(await this.token.totalSupply(), 10000000)
         assert.equal(await this.teamVesting.beneficiary(), accounts[1])
         assert.equal(await this.teamVesting.owner(), accounts[0])
-        assert.equal(await this.teamVesting.start(), 1639699200)
-        assert.equal(await this.teamVesting.duration(), 126144000)
-        assert.equal(await this.teamVesting.cliff(), 1639699200)
+        assert.equal((await this.teamVesting.start()), dec172021)
+        assert.equal(await this.teamVesting.duration(), threeYearsSeconds)
+        assert.equal(await this.teamVesting.cliff(), dec172021)
         assert.equal(await this.teamVesting.revocable(), true)
     })
 
@@ -40,145 +39,32 @@ contract('TeamVesting', function (accounts) {
         })
 
 
-        it('ensure on day 0; 0 tokens are released', async function () {
-            assert.equal(await this.teamVesting.released(this.token.address), 0)
-        })
-
-
         it('dec 17th 2020 - unlock should give out 0 tokens', async function () {
-            assert.equal(await this.teamVesting.releasableAmount(this.token.address), 0)
+            assert.equal(await this.teamVesting.vestedAmount(this.token.address, day0), 0)
         })
+
 
         it('dec 16th 2021 - unlock should give out 0 tokens', async function () {
-            // increaseTime()
-            console.log((await this.teamVesting.now()).toNumber())
-            assert.equal(await this.teamVesting.releasableAmount(this.token.address), 0)
+            assert.equal(await this.teamVesting.vestedAmount(this.token.address, dec172021 - 86400), 0)
         })
 
-        it('jan 17th 2022 - should give out 19,444 tokens', async function () {
-
+        it('jan 18th 2022 - should give out 19,817 tokens', async function () {
+            assert.equal(await this.teamVesting.vestedAmount(this.token.address, jan172022), 19817)
         })
 
-        it('jan 17th 2024 - should give out 700,000 tokens', async function () {
-
+        it('dec 18th 2024 - should give out 700,000 tokens', async function () {
+            assert.equal(await this.teamVesting.vestedAmount(this.token.address, dec182024), 700000)
         })
     })
-
 
 
     it('should change the beneficiary properly', async function () {
         assert.notEqual(this.teamVesting, null)
         assert.equal(await this.teamVesting.beneficiary(), accounts[1])
         assert.equal(await this.teamVesting.owner(), accounts[0])
-        assert.equal(await this.teamVesting.start(), 1639699200)
-        assert.equal(await this.teamVesting.duration(), 126144000)
-        assert.equal(await this.teamVesting.cliff(), 1639699200)
+        assert.equal((await this.teamVesting.start()), dec172021)
+        assert.equal(await this.teamVesting.duration(), threeYearsSeconds)
+        assert.equal(await this.teamVesting.cliff(), dec172021)
         assert.equal(await this.teamVesting.revocable(), true)
     })
-
-    // describe('claimReward()', async function () {
-    //     const userId = '123'
-
-    //     const reward = 100
-    //     const nonce = Math.floor(Date.now() / 1000) + 60
-    //     const rewardAddress = accounts[1]
-
-    //     const { hash, data } = utils.generateHash(reward, rewardAddress, nonce, userId, cryptoControlPrivateKey)
-
-    //     console.log(`"${reward}","${nonce}","${userId}","${utils.bufferToHex(data)}","${hash.v}","${utils.bufferToHex(hash.r)}","${utils.bufferToHex(hash.s)}"`)
-    //     // console.log(
-    //     //     reward,
-    //     //     nonce,
-    //     //     userId,
-
-    //     //     utils.bufferToHex(data),
-    //     //     hash.v, utils.bufferToHex(hash.r), utils.bufferToHex(hash.s), {
-    //     //         from: rewardAddress
-    //     //     }
-    //     // )
-
-    //     beforeEach(async function () {
-    //         this.result = await this.teamVesting.claimReward(
-    //             reward,
-    //             nonce,
-    //             userId,
-
-    //             utils.bufferToHex(data),
-    //             hash.v, utils.bufferToHex(hash.r), utils.bufferToHex(hash.s), {
-    //             from: rewardAddress
-    //         }
-    //         )
-    //     })
-
-
-    //     it('should mint tokens', async function () {
-    //         assert.notEqual(true, null)
-    //     })
-
-
-    //     it('should emit RewardClaimed() event with the right parameters', async function () {
-    //         const event = await expectEvent.inLogs(this.result.logs, 'RewardClaimed')
-    //         assert.equal(event.args.dest, rewardAddress)
-    //         assert.equal(event.args.amount, reward)
-    //         assert.equal(event.args.nonce, nonce)
-    //     })
-
-
-    //     it('should revert a second claim reward with same nonce', async function () {
-    //         await assertRevert(
-    //             this.teamVesting.claimReward(
-    //                 reward, nonce, userId, utils.bufferToHex(data),
-    //                 hash.v, utils.bufferToHex(hash.r), utils.bufferToHex(hash.s),
-    //                 {
-    //                     from: rewardAddress
-    //                 }
-    //             )
-    //         );
-    //     })
-
-
-    //     it('should revert a second claim reward with higher nonce but at the same time', async function () {
-    //         const newNonce = nonce + 60 * 5
-    //         const { hash, data } = utils.generateHash(reward, rewardAddress, newNonce, userId, cryptoControlPrivateKey)
-
-    //         await assertRevert(
-    //             this.teamVesting.claimReward(
-    //                 reward, newNonce, userId, utils.bufferToHex(data),
-    //                 hash.v, utils.bufferToHex(hash.r), utils.bufferToHex(hash.s), {
-    //                 from: rewardAddress
-    //             }
-    //             )
-    //         );
-    //     })
-
-    //     it('should revert a second claim reward with same nonce but at later time', async function () {
-    //         await increaseTime(60 * 5 + 1);
-
-    //         await assertRevert(
-    //             this.teamVesting.claimReward(
-    //                 reward, nonce, userId, utils.bufferToHex(data),
-    //                 hash.v, utils.bufferToHex(hash.r), utils.bufferToHex(hash.s), {
-    //                 from: rewardAddress
-    //             }
-    //             )
-    //         )
-    //     })
-
-
-    //     it('should not revert a second claim reward with higher nonce at later time', async function () {
-    //         const newNonce = nonce + 60 * 5
-    //         const { hash, data } = utils.generateHash(reward, rewardAddress, newNonce, userId, cryptoControlPrivateKey)
-
-    //         await increaseTime(60 * 5 + 1);
-
-    //         const result = this.teamVesting.claimReward(
-    //             reward, newNonce, userId, utils.bufferToHex(data),
-    //             hash.v, utils.bufferToHex(hash.r), utils.bufferToHex(hash.s), {
-    //             from: rewardAddress
-    //         }
-    //         )
-
-    //         assert.notEqual(result, null)
-    //     })
-    // })
 })
