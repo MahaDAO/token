@@ -40,12 +40,12 @@ contract('TeamVesting', function (accounts) {
         })
 
 
-        it('dec 17th 2020 - unlock should give out 0 tokens', async function () {
+        it('dec 17th 2020 - should give out 0 tokens', async function () {
             assert.equal(await this.teamVesting.vestedAmount(this.token.address, day0), 0)
         })
 
 
-        it('dec 16th 2021 - unlock should give out 0 tokens', async function () {
+        it('dec 16th 2021 - should give out 0 tokens', async function () {
             assert.equal(await this.teamVesting.vestedAmount(this.token.address, dec172021 - 86400), 0)
         })
 

@@ -42,12 +42,12 @@ contract('CommunityVesting', function (accounts) {
         })
 
 
-        it('dec 17th 2020 - unlock should give out 0 tokens', async function () {
+        it('dec 17th 2020 - should give out 0 tokens', async function () {
             assert.equal(await this.communityVesting.vestedAmount(this.token.address, day0), 0)
         })
 
 
-        it('jan 17th 2021 - unlock should give out 58,949 tokens', async function () {
+        it('jan 17th 2021 - should give out 58,949 tokens', async function () {
             assert.equal((await this.communityVesting.vestedAmount(this.token.address, jan172021)).toNumber(), 58949)
         })
 

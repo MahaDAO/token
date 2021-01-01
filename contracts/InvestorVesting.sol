@@ -9,6 +9,6 @@ import "./TokenVesting.sol";
 contract InvestorVesting is TokenVesting {
     constructor(address beneficiary)
         public
-        TokenVesting(beneficiary, 1608163200, 0, 28512000, true)
+        TokenVesting(beneficiary, 1608163200, 0, 86400 * 30 * 11, true)
     {}
 }
