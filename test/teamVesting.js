@@ -31,6 +31,7 @@ contract('TeamVesting', function (accounts) {
 
     describe('token unlocks should happen properly', function () {
         beforeEach(async function () {
+            // send 7% of the supply
             this.token.transfer(this.teamVesting.address, 700000)
         })
 
