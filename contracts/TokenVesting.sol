@@ -18,6 +18,7 @@ contract TokenVesting is Ownable {
 
     event TokensReleased(address token, uint256 amount);
     event TokenVestingRevoked(address token);
+    event BeneficiaryChanged(address old, address beneficiary);
 
     // beneficiary of tokens after they are released
     address private _beneficiary;
@@ -114,7 +115,7 @@ contract TokenVesting is Ownable {
      * @param token ERC20 token which is being vested
      */
     function release(IERC20 token) public {
-        uint256 unreleased = _releasableAmount(token);
+        uint256 unreleased = releasableAmount(token);
 
         require(unreleased > 0);
 
@@ -136,7 +137,7 @@ contract TokenVesting is Ownable {
 
         uint256 balance = token.balanceOf(address(this));
 
-        uint256 unreleased = _releasableAmount(token);
+        uint256 unreleased = releasableAmount(token);
         uint256 refund = balance.sub(unreleased);
 
         _revoked[address(token)] = true;
@@ -147,29 +148,45 @@ contract TokenVesting is Ownable {
     }
 
     /**
+     * @notice Changes the beneficiary
+     * @param bene address of the beneficiary to whom vested tokens are transferred
+     */
+    function changeBeneficiary(address bene) public onlyOwner {
+        require(bene != address(0));
+        emit BeneficiaryChanged(_beneficiary, bene);
+        _beneficiary = bene;
+    }
+
+    /**
      * @dev Calculates the amount that has already vested but hasn't been released yet.
      * @param token ERC20 token which is being vested
      */
-    function _releasableAmount(IERC20 token) private view returns (uint256) {
-        return _vestedAmount(token).sub(_released[address(token)]);
+    function releasableAmount(IERC20 token) public view returns (uint256) {
+        return
+            vestedAmount(token, block.timestamp).sub(_released[address(token)]);
     }
 
     /**
      * @dev Calculates the amount that has already vested.
      * @param token ERC20 token which is being vested
+     * @param currentTime uint256 the time for which the vesting period is being calcuated (used for testing)
      */
-    function _vestedAmount(IERC20 token) private view returns (uint256) {
+    function vestedAmount(IERC20 token, uint256 currentTime)
+        public
+        view
+        returns (uint256)
+    {
         uint256 currentBalance = token.balanceOf(address(this));
         uint256 totalBalance = currentBalance.add(_released[address(token)]);
 
-        if (block.timestamp < _cliff) {
+        if (currentTime < _cliff) {
             return 0;
         } else if (
-            block.timestamp >= _start.add(_duration) || _revoked[address(token)]
+            currentTime >= _start.add(_duration) || _revoked[address(token)]
         ) {
             return totalBalance;
         } else {
-            return totalBalance.mul(block.timestamp.sub(_start)).div(_duration);
+            return totalBalance.mul(currentTime.sub(_start)).div(_duration);
         }
     }
 }
