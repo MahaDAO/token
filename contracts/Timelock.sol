@@ -1,10 +1,8 @@
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
 
-import "./interfaces/IAccessControlLock.sol";
+import "./interfaces/IAccessControl.sol";
 
 /**
  * @dev Timelocks minting tokens for the MahaToken.
@@ -13,20 +11,18 @@ import "./interfaces/IAccessControlLock.sol";
  * Also this `Timelock` contract should have the `DEFAULT_ADMIN_ROLE`.
  */
 contract Timelock is Ownable {
-    using SafeMath for uint256;
-
     /**
      * State variables.
      */
 
+    IAccessControl public token;
     uint256 public unlockTimestamp;
-    IAccessControlLock public token;
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
 
     /**
      * Constructor.
      */
-    constructor(IAccessControlLock token_) public {
+    constructor(IAccessControl token_) public {
         token = token_;
     }
 

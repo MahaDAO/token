@@ -1,6 +1,6 @@
 pragma solidity ^0.6.0;
 
-interface IAccessControlLock {
+interface IAccessControl {
     function grantRole(bytes32 role, address account) external;
 
     function revokeRole(bytes32 role, address account) external;
