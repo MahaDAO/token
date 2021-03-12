@@ -20,11 +20,9 @@ contract Timelock is Ownable {
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
 
     /**
-     * Constructor.
+     * Event.
      */
-    constructor(IAccessControl token_) public {
-        token = token_;
-    }
+    event Unlocked(uint256 time, address unlocker);
 
     /**
      * Modifier
@@ -38,9 +36,18 @@ contract Timelock is Ownable {
     }
 
     /**
+     * Constructor.
+     */
+    constructor(IAccessControl token_) public {
+        token = token_;
+    }
+
+    /**
      * Mutations.
      */
     function setAdminRole() public onlyOwner canRestorAdmin {
         token.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+
+        emit Unlocked(block.timestamp, msg.sender);
     }
 }
