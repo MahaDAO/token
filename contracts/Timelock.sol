@@ -46,7 +46,7 @@ contract Timelock is Ownable {
      * Mutations.
      */
     function setAdminRole() public onlyOwner canRestorAdmin {
-        token.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        token.grantRole(DEFAULT_ADMIN_ROLE, owner());
 
         emit Unlocked(block.timestamp, msg.sender);
     }
