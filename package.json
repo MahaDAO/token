@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/MahaDao/token#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^3.3.0"
+    "@openzeppelin/contracts": "^3.3.0",
+    "web3": "^1.3.4"
   }
 }

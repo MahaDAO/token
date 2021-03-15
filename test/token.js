@@ -12,7 +12,6 @@ contract('MahaToken', function (accounts) {
         assert.notEqual(instance, null)
     })
 
-
     it('name, symbol and demicals should be set properly', async function () {
         assert.equal(await this.token.name(), 'MahaDAO')
         assert.equal(await this.token.symbol(), 'MAHA')
