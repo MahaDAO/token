@@ -8,7 +8,7 @@
   },
   "private": true,
   "scripts": {
-    "test": "hardhat test",
+    "test": "rm -rf build && hardhat compile && hardhat test",
     "compile": "rm -rf build && hardhat compile"
   },
   "repository": {
