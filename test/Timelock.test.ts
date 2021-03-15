@@ -15,7 +15,7 @@ chai.use(solidity)
 
 
 describe('Timelock', async () => {
-  const ROLE = '0x00'
+  const ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000'
   const MINTER_ROLE = 'MINTER_ROLE'
   const unlockTimestamp = Math.floor(Date.now() / 1000) + 60
 
