@@ -120,4 +120,52 @@ describe('Timelock', async () => {
     expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
     expect(await token.hasRole(ROLE, owner.address)).to.eq(false)
   })
+
+  it('Token contract owner should not be able to use DEFAULT_ADMIN_ROLE after starting timelock and revoking the same role for self', async function () {
+    await token.grantRole(ROLE, timelock.address)
+    await token.revokeRole(ROLE, owner.address)
+
+    expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
+    expect(await token.hasRole(ROLE, owner.address)).to.eq(false)
+
+    await expect(token.connect(owner).grantRole(MINTER_ROLE, ant.address))
+      .to
+      .revertedWith('AccessControl: sender must be an admin to grant')
+
+    expect(await token.hasRole(ROLE, ant.address)).to.eq(false)
+    expect(await token.hasRole(MINTER_ROLE, ant.address)).to.eq(false)
+    expect(await token.hasRole(PAUSER_ROLE, ant.address)).to.eq(false)
+  })
+
+  it('Token contract owner should be able to use DEFAULT_ADMIN_ROLE after end of timelock and revoking the same role for self', async function () {
+    await token.grantRole(ROLE, timelock.address)
+    await token.revokeRole(ROLE, owner.address)
+
+    expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
+    expect(await token.hasRole(ROLE, owner.address)).to.eq(false)
+
+    await expect(token.connect(owner).grantRole(MINTER_ROLE, ant.address))
+      .to
+      .revertedWith('AccessControl: sender must be an admin to grant')
+
+    expect(await token.hasRole(ROLE, ant.address)).to.eq(false)
+    expect(await token.hasRole(MINTER_ROLE, ant.address)).to.eq(false)
+    expect(await token.hasRole(PAUSER_ROLE, ant.address)).to.eq(false)
+
+    await advanceTimeAndBlock(
+      provider,
+      unlockTimestamp - Math.floor(Date.now() / 1000) + 60
+    )
+
+    await timelock.connect(owner).setAdminRole()
+
+    expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
+    expect(await token.hasRole(ROLE, owner.address)).to.eq(true)
+
+    await token.connect(owner).grantRole(MINTER_ROLE, ant.address)
+
+    expect(await token.hasRole(ROLE, ant.address)).to.eq(false)
+    expect(await token.hasRole(MINTER_ROLE, ant.address)).to.eq(true)
+    expect(await token.hasRole(PAUSER_ROLE, ant.address)).to.eq(false)
+  })
 })
