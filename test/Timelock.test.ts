@@ -7,7 +7,8 @@ import { Contract, ContractFactory, BigNumber, utils } from 'ethers'
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 
 import { advanceTimeAndBlock } from './utilities'
-
+import TimelockJSON from '../build/artifacts/contracts/Timelock.sol/Timelock.json'
+import MahaTokenJSON from '../build/artifacts/contracts/MahaToken.sol/MahaToken.json'
 
 
 chai.use(solidity)
@@ -26,26 +27,31 @@ describe('Timelock', async () => {
   let token: Contract
   let timelock: Contract
 
-  const Token: ContractFactory = await ethers.getContractFactory('MahaToken')
-  const Timelock: ContractFactory = await ethers.getContractFactory('Timelock')
+  const Token: ContractFactory = new ContractFactory(
+    MahaTokenJSON.abi,
+    MahaTokenJSON.bytecode
+  )
+  const Timelock: ContractFactory = new ContractFactory(
+    TimelockJSON.abi,
+    TimelockJSON.bytecode
+  )
 
   before('Provider & accounts setting', async () => {
     [owner, ant] = await ethers.getSigners()
-  });
+  })
 
-  it('Should give DEFAULT_ADMIN_ROLE to timelocks', async function () {
+  beforeEach('Provider & accounts setting', async () => {
     token = await Token.connect(owner).deploy()
     timelock = await Timelock.connect(owner).deploy(token.address, unlockTimestamp)
+  })
 
+  it('Should give DEFAULT_ADMIN_ROLE to timelocks', async function () {
     await token.connect(owner).grantRole(ROLE, timelock.address)
 
     expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
   })
 
   it('Should give DEFAULT_ADMIN_ROLE to timelocks and revoke for self', async function () {
-    token = await Token.connect(owner).deploy()
-    timelock = await Timelock.connect(owner).deploy(token.address, unlockTimestamp)
-
     await token.connect(owner).grantRole(ROLE, timelock.address)
     await token.connect(owner).revokeRole(ROLE, owner.address)
 
@@ -54,9 +60,6 @@ describe('Timelock', async () => {
   })
 
   it('Should not allow giving DEFAULT_ADMIN_ROLE to timelock owner before unlockTimestamp', async function () {
-    token = await Token.connect(owner).deploy()
-    timelock = await Timelock.connect(owner).deploy(token.address, unlockTimestamp)
-
     await token.connect(owner).grantRole(ROLE, timelock.address)
     await token.connect(owner).revokeRole(ROLE, owner.address)
 
@@ -67,9 +70,6 @@ describe('Timelock', async () => {
   })
 
   it('Should allow giving DEFAULT_ADMIN_ROLE to timelock owner after unlockTimestamp', async function () {
-    token = await Token.connect(owner).deploy()
-    timelock = await Timelock.connect(owner).deploy(token.address, unlockTimestamp)
-
     await token.grantRole(ROLE, timelock.address)
     await token.revokeRole(ROLE, owner.address)
 
