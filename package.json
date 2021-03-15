@@ -8,7 +8,8 @@
   },
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test",
+    "compile": "rm -rf build && hardhat compile"
   },
   "repository": {
     "type": "git",
