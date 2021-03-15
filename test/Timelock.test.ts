@@ -169,7 +169,7 @@ describe('Timelock', async () => {
     expect(await token.hasRole(PAUSER_ROLE, ant.address)).to.eq(false)
   })
 
-  it('Token contract owner should be  DEFAULT_ADMIN_ROLE during the timelock', async function () {
+  it('Token contract owner should not be DEFAULT_ADMIN_ROLE during the timelock and be DEFAULT_ADMIN_ROLE after timelock', async function () {
     await token.grantRole(ROLE, timelock.address)
     await token.revokeRole(ROLE, owner.address)
 
