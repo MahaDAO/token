@@ -6,9 +6,6 @@ import "./interfaces/IAccessControl.sol";
 
 /**
  * @dev Timelocks minting tokens for the MahaToken.
- *
- * NOTE: `MINTER_ROLE` has to be revoked from all `MINTER_ROLE` holders.
- * Also this `Timelock` contract should have the `DEFAULT_ADMIN_ROLE`.
  */
 contract Timelock is Ownable {
     /**

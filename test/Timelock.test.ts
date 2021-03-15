@@ -6,7 +6,7 @@ import { solidity } from 'ethereum-waffle'
 import { Contract, ContractFactory, BigNumber, utils } from 'ethers'
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 
-import { advanceTimeAndBlock } from './utilities'
+import { advanceTimeAndBlock, latestBlocktime } from './utilities'
 import TimelockJSON from '../build/artifacts/contracts/Timelock.sol/Timelock.json'
 import MahaTokenJSON from '../build/artifacts/contracts/MahaToken.sol/MahaToken.json'
 
@@ -16,7 +16,9 @@ chai.use(solidity)
 
 describe('Timelock', async () => {
   const ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000'
-  const MINTER_ROLE = 'MINTER_ROLE'
+  const MINTER_ROLE = '0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6'
+  const PAUSER_ROLE = '0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a'
+
   const unlockTimestamp = Math.floor(Date.now() / 1000) + 60
 
   const { provider } = ethers
@@ -59,17 +61,31 @@ describe('Timelock', async () => {
     expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
   })
 
-  it('Should not allow giving DEFAULT_ADMIN_ROLE to timelock owner before unlockTimestamp', async function () {
+  it('Should not allow giving DEFAULT_ADMIN_ROLE to timelock owner before unlockTimestamp even if called by timelock owner', async function () {
     await token.connect(owner).grantRole(ROLE, timelock.address)
     await token.connect(owner).revokeRole(ROLE, owner.address)
 
     expect(await token.hasRole(ROLE, owner.address)).to.eq(false)
     expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
 
-    await expect(timelock.setAdminRole()).to.reverted
+    await expect(timelock.connect(owner).setAdminRole())
+      .to
+      .revertedWith("Timelock: early minting not allowed")
   })
 
-  it('Should allow giving DEFAULT_ADMIN_ROLE to timelock owner after unlockTimestamp', async function () {
+  it('Should not allow giving DEFAULT_ADMIN_ROLE to timelock owner before unlockTimestamp if not called by timelock owner', async function () {
+    await token.connect(owner).grantRole(ROLE, timelock.address)
+    await token.connect(owner).revokeRole(ROLE, owner.address)
+
+    expect(await token.hasRole(ROLE, owner.address)).to.eq(false)
+    expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
+
+    await expect(timelock.connect(ant).setAdminRole())
+      .to
+      .revertedWith("Ownable: caller is not the owner")
+  })
+
+  it('Should allow giving DEFAULT_ADMIN_ROLE to timelock owner after unlockTimestamp if called only by timelock owner', async function () {
     await token.grantRole(ROLE, timelock.address)
     await token.revokeRole(ROLE, owner.address)
 
@@ -81,9 +97,27 @@ describe('Timelock', async () => {
       unlockTimestamp - Math.floor(Date.now() / 1000) + 60
     )
 
-    await timelock.setAdminRole()
+    await timelock.connect(owner).setAdminRole()
 
     expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
     expect(await token.hasRole(ROLE, owner.address)).to.eq(true)
+  })
+
+  it('Should not allow giving DEFAULT_ADMIN_ROLE to timelock owner after unlockTimestamp if not called by timelock owner', async function () {
+    await token.grantRole(ROLE, timelock.address)
+    await token.revokeRole(ROLE, owner.address)
+
+    expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
+    expect(await token.hasRole(ROLE, owner.address)).to.eq(false)
+
+    await advanceTimeAndBlock(
+      provider,
+      unlockTimestamp - Math.floor(Date.now() / 1000) + 60
+    )
+
+    await expect(timelock.connect(ant).setAdminRole()).to.revertedWith("Ownable: caller is not the owner")
+
+    expect(await token.hasRole(ROLE, timelock.address)).to.eq(true)
+    expect(await token.hasRole(ROLE, owner.address)).to.eq(false)
   })
 })
