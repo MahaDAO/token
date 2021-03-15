@@ -18,6 +18,7 @@ contract Timelock is Ownable {
     IAccessControl public token;
     uint256 public unlockTimestamp;
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     /**
      * Event.
@@ -38,13 +39,20 @@ contract Timelock is Ownable {
     /**
      * Constructor.
      */
-    constructor(IAccessControl token_) public {
+    constructor(IAccessControl token_, uint256 unlockTimestamp_) public {
         token = token_;
+        unlockTimestamp = unlockTimestamp_;
     }
 
     /**
      * Mutations.
      */
+
+    // function revokeAdminRole(address who) public onlyOwner {
+    //     token.revokeRole(MINTER_ROLE, who);
+    //     token.revokeRole(DEFAULT_ADMIN_ROLE, who);
+    // }
+
     function setAdminRole() public onlyOwner canRestorAdmin {
         token.grantRole(DEFAULT_ADMIN_ROLE, owner());
 

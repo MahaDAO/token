@@ -2,23 +2,17 @@ const Timelock = artifacts.require('Timelock')
 const MahaToken = artifacts.require('MahaToken')
 
 
-contract('Timelock', function (Timelock) {
+contract('Timelock', function (accounts) {
+    const ROLE = '0x00'
+
     beforeEach(async function () {
         this.token = await MahaToken.new()
-        this.timelock = await MahaToken.new()
+        this.timelock = await Timelock.new(this.token.address, Math.floor(Date.now() / 1000) + 60 * 60)
     })
 
-    it('Should deploy properly', async function () {
-        const tokenInstance = await MahaToken.deployed()
-        const timelockInstance = await Timelock.deployed()
+    it('Should transfer DEFAULT_ADMIN_ROLE to timelocks', async function () {
+        await this.token.grantRole(ROLE, this.timelock.address)
 
-        assert.notEqual(tokenInstance, null)
-        assert.notEqual(timelockInstance, null)
-    })
-
-    it('Should not work if not the owner of timelock', async function () {
-        assert.equal(await this.token.name(), 'MahaDAO')
-        assert.equal(await this.token.symbol(), 'MAHA')
-        assert.equal(await this.token.decimals(), 18)
+        assert.equal(await this.token.hasRole(ROLE, this.timelock.address), true)
     })
 })
