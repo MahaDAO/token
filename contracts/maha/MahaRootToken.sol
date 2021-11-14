@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./lib/ERC20.sol";
-import "./lib/Ownable.sol";
-import "./lib/Pausable.sol";
-import "./lib/ERC20Permit.sol";
+import "../lib/ERC20.sol";
+import "../lib/Ownable.sol";
+import "../lib/Pausable.sol";
+import "../lib/ERC20Permit.sol";
 
 /**
  * Implementation of the token
