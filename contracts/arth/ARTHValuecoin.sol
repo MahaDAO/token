@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract ARTHValuecoin is ERC20, ERC20Permit {
     bytes32 private immutable _COMMIT_TYPEHASH =
         keccak256(
-            "Commit(address from, address to, uint256 amount, address commissionTo, uint256 commissionAmount, uint256 deadline)"
+            "Commit(address from, address to, uint256 amount, uint256 commissionAmount, uint256 deadline)"
         );
 
     event Commission(
@@ -21,32 +21,12 @@ contract ARTHValuecoin is ERC20, ERC20Permit {
     constructor() ERC20("ARTH Valuecoin", "ARTH") ERC20Permit("ARTH") {}
 
     /**
-     * @dev Make an ERC20 transfer with a commision to someone.
-     */
-    function payWithCommision(
-        address to,
-        uint256 amount,
-        address commissionTo,
-        uint256 commissionAmount
-    ) external virtual {
-        _transfer(msg.sender, to, amount);
-        _transfer(msg.sender, commissionTo, commissionAmount);
-        emit Commission(
-            msg.sender,
-            to,
-            amount + commissionAmount,
-            commissionAmount
-        );
-    }
-
-    /**
      * @dev Make an ERC20 transfer with a commision to someone based on a signature (making this tx gasless)
      */
     function payWithCommisionWithPermit(
         address from,
         address to,
         uint256 amount,
-        address commissionTo,
         uint256 commissionAmount,
         uint256 deadline,
         uint8 v,
@@ -55,28 +35,36 @@ contract ARTHValuecoin is ERC20, ERC20Permit {
     ) external virtual {
         require(block.timestamp <= deadline, "ARTHValuecoin: expired deadline");
 
+        // verify the signature
         bytes32 structHash = keccak256(
             abi.encode(
                 _COMMIT_TYPEHASH,
                 from,
                 to,
                 amount,
-                commissionTo,
                 commissionAmount,
                 deadline,
                 _useNonce(from),
                 deadline
             )
         );
-
         bytes32 hash = _hashTypedDataV4(structHash);
-
         address signer = ECDSA.recover(hash, v, r, s);
         require(signer == from, "ARTHValuecoin: invalid signature");
 
+        // TODO: verify the nonce?
+
+        // send the tokens
         _transfer(from, to, amount);
-        _transfer(from, commissionTo, commissionAmount);
-        emit Commission(from, to, amount + commissionAmount, commissionAmount);
+
+        // send and log the commision
+        _transfer(from, msg.sender, commissionAmount);
+        emit Commission(
+            from,
+            msg.sender,
+            amount + commissionAmount,
+            commissionAmount
+        );
     }
 
     function _beforeTokenTransfer(
