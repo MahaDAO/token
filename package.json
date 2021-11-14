@@ -1,26 +1,39 @@
 {
-  "name": "token",
+  "name": "maha-token",
   "version": "1.0.0",
   "description": "",
-  "main": "truffle-config.js",
-  "directories": {
-    "test": "test"
-  },
-  "private": true,
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
+    "compile": "hardat compile",
     "type": "git",
-    "url": "git+https://github.com/MahaDao/token.git"
+    "url": "git+https://github.com/MahaDAO/scallop-token.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/MahaDao/token/issues"
+    "url": "https://github.com/MahaDAO/scallop-token/issues"
   },
-  "homepage": "https://github.com/MahaDao/token#readme",
+  "homepage": "https://github.com/MahaDAO/scallop-token#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^3.3.0"
+    "@nomiclabs/hardhat-etherscan": "^2.1.7",
+    "@openzeppelin/contracts": "^4.2.0",
+    "dotenv": "^10.0.0",
+    "hardhat": "^2.6.0",
+    "hardhat-gas-reporter": "^1.0.4",
+    "hardhat-proxy": "^1.0.0",
+    "js-sha3": "^0.8.0",
+    "ts-node": "^10.4.0",
+    "web3": "^1.6.0",
+    "web3-eth": "^1.6.0"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.0",
+    "chai": "^4.2.0",
+    "ethereum-waffle": "^3.0.0",
+    "ethers": "^5.0.0"
   }
 }

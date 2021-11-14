@@ -1,6 +1,8 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
 
-import "./TokenVesting.sol";
+pragma solidity ^0.8.0;
+
+import "../lib/TokenVesting.sol";
 
 /**
  * @title CommunityVesting
