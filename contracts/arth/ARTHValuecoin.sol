@@ -11,8 +11,18 @@ contract ARTHValuecoin is ERC20, ERC20Permit {
             "Commit(address from, address to, uint256 amount, address commissionTo, uint256 commissionAmount, uint256 deadline)"
         );
 
+    event Commission(
+        address indexed from,
+        address indexed to,
+        uint256 totalAmount,
+        uint256 commissionAmount
+    );
+
     constructor() ERC20("ARTH Valuecoin", "ARTH") ERC20Permit("ARTH") {}
 
+    /**
+     * @dev Make an ERC20 transfer with a commision to someone.
+     */
     function payWithCommision(
         address to,
         uint256 amount,
@@ -21,8 +31,17 @@ contract ARTHValuecoin is ERC20, ERC20Permit {
     ) external virtual {
         _transfer(msg.sender, to, amount);
         _transfer(msg.sender, commissionTo, commissionAmount);
+        emit Commission(
+            msg.sender,
+            to,
+            amount + commissionAmount,
+            commissionAmount
+        );
     }
 
+    /**
+     * @dev Make an ERC20 transfer with a commision to someone based on a signature (making this tx gasless)
+     */
     function payWithCommisionWithPermit(
         address from,
         address to,
@@ -57,6 +76,7 @@ contract ARTHValuecoin is ERC20, ERC20Permit {
 
         _transfer(from, to, amount);
         _transfer(from, commissionTo, commissionAmount);
+        emit Commission(from, to, amount + commissionAmount, commissionAmount);
     }
 
     function _beforeTokenTransfer(
