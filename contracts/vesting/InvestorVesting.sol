@@ -9,8 +9,9 @@ import "../lib/TokenVesting.sol";
  * @dev Seed, Private and Advisory tokens are vested for 11 months. starting Dec 17th 2020
  */
 contract InvestorVesting is TokenVesting {
-    constructor(address beneficiary)
-        public
-        TokenVesting(beneficiary, 1608163200, 0, 86400 * 30 * 11, true)
-    {}
+    constructor(
+        address token,
+        address beneficiary,
+        address owner
+    ) TokenVesting(token, beneficiary, owner, 1608163200, 0, 86400 * 30 * 11) {}
 }
