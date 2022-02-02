@@ -27,8 +27,8 @@ abstract contract Ownable is Context {
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
-    function initializeOwnable(address owner) internal {
-        _setOwner(owner);
+    function initializeOwnable(address _who) internal {
+        _setOwner(_who);
     }
 
     /**

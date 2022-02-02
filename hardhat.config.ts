@@ -1,5 +1,3 @@
-import { task } from "hardhat/config";
-
 import { config as dotenvConfig } from "dotenv";
 import { resolve } from "path";
 
