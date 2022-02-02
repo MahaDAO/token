@@ -16,28 +16,10 @@ contract DistributionContract is Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    event InvestorsAdded(
-        address[] investors,
-        uint256[] tokenAllocations,
-        address caller
-    );
-
-    event InvestorAdded(
-        address indexed investor,
-        address indexed caller,
-        uint256 allocation
-    );
-
-    event InvestorRemoved(
-        address indexed investor,
-        address indexed caller,
-        uint256 allocation
-    );
+    event InvestorAdded(address indexed investor, uint256 allocation);
 
     event InvestorBlacklisted(address indexed investor);
     event WithdrawnTokens(address indexed investor, uint256 value);
-    event DepositInvestment(address indexed investor, uint256 value);
-    event TransferInvestment(address indexed owner, uint256 value);
     event RecoverToken(address indexed token, uint256 indexed amount);
 
     uint256 public totalAllocatedAmount;
@@ -85,7 +67,6 @@ contract DistributionContract is Ownable {
         for (uint256 i = 0; i < _investors.length; i++) {
             _addInvestor(_investors[i], _tokenAllocations[i]);
         }
-        emit InvestorsAdded(_investors, _tokenAllocations, msg.sender);
     }
 
     function blacklistInvestor(address _investor) external onlyOwner {
@@ -114,7 +95,7 @@ contract DistributionContract is Ownable {
         investor.exists = true;
         investors.push(_investor);
         totalAllocatedAmount = totalAllocatedAmount.add(_tokensAllotment);
-        emit InvestorAdded(_investor, _msgSender(), _tokensAllotment);
+        emit InvestorAdded(_investor, _tokensAllotment);
     }
 
     function withdrawTokens() external onlyInvestor {
