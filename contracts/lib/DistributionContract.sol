@@ -17,14 +17,13 @@ contract DistributionContract is Ownable {
     using SafeERC20 for IERC20;
 
     event InvestorAdded(address indexed investor, uint256 allocation);
-
     event InvestorBlacklisted(address indexed investor);
     event WithdrawnTokens(address indexed investor, uint256 value);
     event RecoverToken(address indexed token, uint256 indexed amount);
 
+    IERC20 public token;
     uint256 public totalAllocatedAmount;
     uint256 public initialTimestamp;
-    IERC20 public token;
     uint256 public noOfRemaingDays;
     address[] public investors;
 
@@ -108,7 +107,6 @@ contract DistributionContract is Ownable {
             tokensAvailable
         );
         token.safeTransfer(_msgSender(), tokensAvailable);
-
         emit WithdrawnTokens(_msgSender(), tokensAvailable);
     }
 
