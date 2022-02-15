@@ -50,6 +50,7 @@ contract ARTHValuecoin is ERC20, ERC20Permit {
         bytes32 hash = _hashTypedDataV4(structHash);
         address signer = ECDSA.recover(hash, v, r, s);
         require(signer == from, "ARTHValuecoin: invalid signature");
+        require(address(0) != from, "ARTHValuecoin: invalid signature");
 
         // send the tokens
         _transfer(from, to, amount);
