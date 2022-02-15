@@ -43,7 +43,6 @@ contract ARTHValuecoin is ERC20, ERC20Permit {
                 to,
                 amount,
                 commissionAmount,
-                deadline,
                 _useNonce(from),
                 deadline
             )
