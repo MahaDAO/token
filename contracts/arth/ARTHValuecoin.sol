@@ -5,64 +5,56 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ARTHValuecoin is ERC20, ERC20Permit {
-    bytes32 private immutable _COMMIT_TYPEHASH =
-        keccak256(
-            "Commit(address from, address to, uint256 amount, uint256 commissionAmount, uint256 deadline)"
-        );
-
-    event Commission(
-        address indexed from,
-        address indexed to,
-        uint256 totalAmount,
-        uint256 commissionAmount
-    );
-
+contract ARTHValuecoin is Ownable, ERC20, ERC20Permit {
     constructor() ERC20("ARTH Valuecoin", "ARTH") ERC20Permit("ARTH") {}
 
-    /**
-     * @dev Make an ERC20 transfer with a commision to someone based on a signature (making this tx gasless)
-     */
-    function payWithCommisionWithPermit(
-        address from,
-        address to,
-        uint256 amount,
-        uint256 commissionAmount,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external virtual {
-        require(block.timestamp <= deadline, "ARTHValuecoin: expired deadline");
+    mapping (address => bool) public borrowerOperationAddresses;
+    mapping (address => bool) public troveManagerAddresses;
+    mapping (address => bool) public stabilityPoolAddresses;
 
-        // verify the signature
-        bytes32 structHash = keccak256(
-            abi.encode(
-                _COMMIT_TYPEHASH,
-                from,
-                to,
-                amount,
-                commissionAmount,
-                deadline,
-                _useNonce(from),
-                deadline
-            )
-        );
-        bytes32 hash = _hashTypedDataV4(structHash);
-        address signer = ECDSA.recover(hash, v, r, s);
-        require(signer == from, "ARTHValuecoin: invalid signature");
+    // --- Events ---
+    event BorrowerOperationsAddressToggled(address indexed boAddress, bool oldFlag, bool newFlag, uint256 timestamp);
+    event TroveManagerToggled(address indexed tmAddress, bool oldFlag, bool newFlag, uint256 timestamp);
+    event StabilityPoolToggled(address indexed spAddress, bool oldFlag, bool newFlag, uint256 timestamp);
 
-        // send the tokens
-        _transfer(from, to, amount);
+    function toggleBorrowerOperations(address borrowerOperations) external onlyOwner {
+        bool oldFlag = borrowerOperationAddresses[borrowerOperations];
+        borrowerOperationAddresses[borrowerOperations] = !oldFlag;
+        emit BorrowerOperationsAddressToggled(borrowerOperations, oldFlag, !oldFlag, block.timestamp);
+    }
 
-        // send and log the commision
-        _transfer(from, msg.sender, commissionAmount);
-        emit Commission(
-            from,
-            msg.sender,
-            amount + commissionAmount,
-            commissionAmount
-        );
+    function toggleTroveManager(address troveManager) external onlyOwner {
+        bool oldFlag = troveManagerAddresses[troveManager];
+        troveManagerAddresses[troveManager] = !oldFlag;
+        emit TroveManagerToggled(troveManager, oldFlag, !oldFlag, block.timestamp);
+    }
+
+    function toggleStabilityPool(address stabilityPool) external onlyOwner {
+        bool oldFlag = stabilityPoolAddresses[stabilityPool];
+        stabilityPoolAddresses[stabilityPool] = !oldFlag;
+        emit StabilityPoolToggled(stabilityPool, oldFlag, !oldFlag, block.timestamp);
+    }
+
+    // --- Functions for intra-Liquity calls ---
+
+    function mint(address _account, uint256 _amount) external {
+        _requireCallerIsBorrowerOperations();
+        _mint(_account, _amount);
+    }
+
+    function burn(address _account, uint256 _amount) external {
+        _requireCallerIsBOorTroveMorSP();
+        _burn(_account, _amount);
+    }
+
+    function sendToPool(address _sender,  address _poolAddress, uint256 _amount) external {
+        _requireCallerIsStabilityPool();
+        _transfer(_sender, _poolAddress, _amount);
+    }
+
+    function returnFromPool(address _poolAddress, address _receiver, uint256 _amount) external {
+        _requireCallerIsTroveMorSP();
+        _transfer(_poolAddress, _receiver, _amount);
     }
 
     function _beforeTokenTransfer(
@@ -72,5 +64,44 @@ contract ARTHValuecoin is ERC20, ERC20Permit {
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
         require(address(to) != address(this), "dont send to token contract");
+    }
+
+    // --- 'require' functions ---
+
+    function _requireValidRecipient(address _recipient) internal view {
+        require(
+            _recipient != address(0) &&
+            _recipient != address(this),
+            "ARTH: Cannot transfer tokens directly to the ARTH token contract or the zero address"
+        );
+        require(
+            !stabilityPoolAddresses[_recipient] &&
+            !troveManagerAddresses[_recipient] &&
+            !borrowerOperationAddresses[_recipient],
+            "ARTH: Cannot transfer tokens directly to the StabilityPool, TroveManager or BorrowerOps"
+        );
+    }
+
+    function _requireCallerIsBorrowerOperations() internal view {
+        require(borrowerOperationAddresses[msg.sender], "ARTH: Caller is not BorrowerOperations");
+    }
+
+    function _requireCallerIsBOorTroveMorSP() internal view {
+        require(
+           borrowerOperationAddresses[msg.sender] ||
+           troveManagerAddresses[msg.sender] ||
+           stabilityPoolAddresses[msg.sender],
+            "ARTH: Caller is neither BorrowerOperations nor TroveManager nor StabilityPool"
+        );
+    }
+
+    function _requireCallerIsStabilityPool() internal view {
+        require(stabilityPoolAddresses[msg.sender], "ARTH: Caller is not the StabilityPool");
+    }
+
+    function _requireCallerIsTroveMorSP() internal view {
+        require(
+            troveManagerAddresses[msg.sender] || stabilityPoolAddresses[msg.sender],
+            "ARTH: Caller is neither TroveManager nor StabilityPool");
     }
 }

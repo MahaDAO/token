@@ -4,21 +4,15 @@ import { isAddress } from "../utils";
 
 async function main() {
   const instance = await ethers.getContractAt(
-    "ScallopInvestorsDistribution",
-    "0x5e60988c21910255b3ab479e67a162835390171b"
+    "MahaTeamDistribution",
+    "0x4723babf3E761f41E298cB034FD387D2e27ac9d7"
   );
 
   const txs = [
-    "0x1ff4C0Ae0F386c16D297d7580B872Da90fadaE2c,9563",
-    "0x336f2809f43fefb062a2b25F1C74a22a9bB26981,10625",
-    "0xF8861c420FaB6bad324f2e83EEEDBb8c71CB0A15,35417",
-    "0x842485AC1CF5d37d3cfd013745618561B2dA4B46,85000",
-    "0xc27F4956826755b69651dACc8146CB7C46835E99,5667",
-    "0x8f4aa767e6eadef366c707f4ca7f59127083b6d1,22667",
-    "0xB8221D5fb33C317CfBD912b8cE4Bd7C7740fAF88,5667",
-    "0xaEc661a58928e60f52976F1886cD27845789D90f,14167",
-    "0x0962E1CE0819C840519A95111c9B2e4D8e475ecc,2833",
-    "0x8adDabF339c54Aa0c6e8Adb41C2CB2F1d68451f5,11333",
+    "0xf4471230B65a889ba33d455713A5B50DD734a6f2,25000",
+    "0xe3331B02778fd6E3e833FaDcCcff31c621BC5FF5,25000",
+    "0xC15D36686a07449C178fFaA4d68712a20DC1968A,200000",
+    "0x984A9f1e5f583a72165A928bc804996D777bc859,75000",
   ];
 
   const mappedValues = txs.map((t) => t.split(","));
@@ -35,7 +29,7 @@ async function main() {
   // await USDC.approve(instance.address, infinity);
   // console.log('approved usdc spend');
 
-  const gap = 1;
+  const gap = 10;
   for (let index = 0; index < values.length / gap; index++) {
     const addressSnip = addresses.slice(index * gap, (index + 1) * gap);
     const valuesSnip = values.slice(index * gap, (index + 1) * gap);
@@ -50,7 +44,7 @@ async function main() {
       const tx1 = await instance.addInvestors(addressSnip, valuesSnip);
       console.log("done", tx1.hash);
     } catch (error) {
-      console.log("skipping", index, error.reason);
+      console.log("skipping", index, error);
       // process.exit();
     }
   }
