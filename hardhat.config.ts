@@ -79,7 +79,12 @@ const config: HardhatUserConfig = {
     ],
   },
   etherscan: {
-    apiKey: ETHERSCAN_API_KEY,
+    apiKey: {
+      polygon: process.env.POLYGONSCAN_API_KEY,
+      bsc: process.env.BSCSCAN_API_KEY,
+      bscTestnet: process.env.BSCSCAN_API_KEY,
+      mainnet: process.env.ETHERSCAN_API_KEY,
+    },
   },
   gasReporter: {
     currency: "USD",
