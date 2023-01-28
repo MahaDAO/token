@@ -10,7 +10,7 @@
   },
   "MahaTeamDistribution": {
     "abi": "MahaTeamDistribution",
-    "verified": false,
-    "address": "0x6C423094508c463520684900520C8E45E1A51A0b"
+    "verified": true,
+    "address": "0x9a7e3373b0E509379a24BA4983d72c51Bc416907"
   }
 }

@@ -16,7 +16,6 @@ export default async function verifyContract(
 
     await hre.run("verify:verify", {
       address,
-      contract: "contracts/vesting/CommunityVesting.sol:CommunityVesting",
       constructorArguments,
     });
   } catch (error: any) {
@@ -95,7 +94,7 @@ export const deployOrLoad = async (
     `\ndeploying ${key} at ${ethers.utils.formatUnits(gasPrice, `gwei`)} gwei`
   );
   const factory = await ethers.getContractFactory(contractName);
-  const instance = await factory.deploy(...args, { gasPrice });
+  const instance = await factory.deploy(...args, { gasPrice: 14000000000 });
   await instance.deployed();
   console.log(
     `${instance.address} -> tx hash: ${instance.deployTransaction.hash}`

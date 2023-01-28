@@ -73,6 +73,7 @@ const config: HardhatUserConfig & any = {
     },
     ethereum: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      gasPrice: 14000000000,
       // `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
