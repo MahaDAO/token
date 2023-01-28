@@ -40,6 +40,7 @@ contract TokenVesting is Ownable {
      * @param _cliffDuration duration in seconds of the cliff in which tokens will begin to vest
      * @param _start the time (as Unix time) at which point vesting starts
      * @param _duration duration in seconds of the period in which the tokens will vest
+     * @param _released how much tokens have been released so far
      */
     constructor(
         address _token,
@@ -47,18 +48,19 @@ contract TokenVesting is Ownable {
         address _owner,
         uint256 _start,
         uint256 _cliffDuration,
-        uint256 _duration
+        uint256 _duration,
+        uint256 _released
     ) {
         require(_beneficiary != address(0));
         require(_cliffDuration <= _duration);
         require(_duration > 0);
-        require(_start.add(_duration) > block.timestamp);
 
         beneficiary = _beneficiary;
         duration = _duration;
         cliff = _start.add(_cliffDuration);
         start = _start;
         token = IERC20(_token);
+        released = _released;
 
         transferOwnership(_owner);
     }
@@ -110,12 +112,8 @@ contract TokenVesting is Ownable {
         uint256 currentBalance = token.balanceOf(address(this));
         uint256 totalBalance = currentBalance.add(released);
 
-        if (currentTime < cliff) {
-            return 0;
-        } else if (currentTime >= start.add(duration)) {
-            return totalBalance;
-        } else {
-            return totalBalance.mul(currentTime.sub(start)).div(duration);
-        }
+        if (currentTime < cliff) return 0;
+        else if (currentTime >= start.add(duration))return totalBalance;
+        else return totalBalance.mul(currentTime.sub(start)).div(duration);
     }
 }

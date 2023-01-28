@@ -1,95 +1,106 @@
-import { config as dotenvConfig } from "dotenv";
-import { resolve } from "path";
+import * as dotenv from "dotenv";
 
-dotenvConfig({ path: resolve(__dirname, "./.env") });
+import { HardhatUserConfig, task } from "hardhat/config";
 
-import { HardhatUserConfig } from "hardhat/types";
-import { NetworkUserConfig } from "hardhat/types";
-
-import "hardhat-gas-reporter";
-import "hardhat-proxy";
-import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
+import "@nomiclabs/hardhat-waffle";
+import "@typechain/hardhat";
+import "hardhat-gas-reporter";
+import "solidity-coverage";
+import "hardhat-abi-exporter";
 
-const chainIds = {
-  ganache: 1337,
-  goerli: 5,
-  hardhat: 31337,
-  kovan: 42,
-  mainnet: 1,
-  rinkeby: 4,
-  ropsten: 3,
-};
+dotenv.config();
 
-const MNEMONIC = process.env.MNEMONIC || "";
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
-const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
-const WALLET_SECRET = process.env.WALLET_SECRET || "";
+// This is a sample Hardhat task. To learn how to create your own go to
+// https://hardhat.org/guides/create-task.html
+task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
+  const accounts = await hre.ethers.getSigners();
 
-function createTestnetConfig(
-  network: keyof typeof chainIds
-): NetworkUserConfig {
-  const url: string = "https://" + network + ".infura.io/v3/" + INFURA_API_KEY;
-  return {
-    accounts: [WALLET_SECRET],
-    chainId: chainIds[network],
-    url,
-  };
-}
+  for (const account of accounts) {
+    console.log(account.address);
+  }
+});
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
-const config: HardhatUserConfig = {
-  defaultNetwork: "hardhat",
-  networks: {
-    hardhat: {
-      accounts: {
-        mnemonic: MNEMONIC,
-      },
-      chainId: chainIds.hardhat,
-    },
-    mainnet: createTestnetConfig("mainnet"),
-    goerli: createTestnetConfig("goerli"),
-    kovan: createTestnetConfig("kovan"),
-    rinkeby: createTestnetConfig("rinkeby"),
-    ropsten: createTestnetConfig("ropsten"),
-    bsc: {
-      accounts: [WALLET_SECRET],
-      chainId: 56,
-      url: "https://bsc-dataseed.binance.org/",
-    },
-    bscTestnet: {
-      accounts: [WALLET_SECRET],
-      chainId: 97,
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
-    },
+const config: HardhatUserConfig & any = {
+  vyper: {
+    version: "0.2.7",
   },
   solidity: {
     compilers: [
       {
-        version: "0.6.12",
+        version: "0.8.4",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
       },
       {
-        version: "0.6.6",
+        version: "0.7.6",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
       },
       {
-        version: "0.8.0",
+        version: "0.5.0",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
       },
     ],
   },
-  etherscan: {
-    apiKey: {
-      polygon: process.env.POLYGONSCAN_API_KEY,
-      bsc: process.env.BSCSCAN_API_KEY,
-      bscTestnet: process.env.BSCSCAN_API_KEY,
-      mainnet: process.env.ETHERSCAN_API_KEY,
+  networks: {
+    hardhat: {
+      forking: {
+        url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      },
+      accounts: [
+        {
+          balance: "100000000000000000000",
+          privateKey: process.env.PRIVATE_KEY,
+        },
+      ],
+    },
+    ethereum: {
+      url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      // `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    goerli: {
+      url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
   },
+  abiExporter: {
+    path: "./output/abis/",
+    runOnCompile: false,
+    clear: true,
+    flat: true,
+    spacing: 2,
+    pretty: true,
+  },
   gasReporter: {
+    enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD",
-    gasPrice: 100,
-    // enabled: process.env.REPORT_GAS ? true : false,
+  },
+  etherscan: {
+    apiKey: {
+      mainnet: process.env.ETHERSCAN_API_KEY,
+      goerli: process.env.ETHERSCAN_API_KEY,
+      polygon: process.env.POLYGONSCAN_API_KEY,
+    },
   },
 };
 

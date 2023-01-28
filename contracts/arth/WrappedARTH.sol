@@ -9,12 +9,12 @@ contract WrappedARTH is ARTHValuecoin {
 
     function deposit() public payable {
         _mint(msg.sender, msg.value);
-        Deposit(msg.sender, msg.value);
+        emit Deposit(msg.sender, msg.value);
     }
 
     function withdraw(uint256 wad) public {
         _burn(msg.sender, wad);
         payable(msg.sender).transfer(wad);
-        Withdrawal(msg.sender, wad);
+        emit Withdrawal(msg.sender, wad);
     }
 }
