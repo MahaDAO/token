@@ -12,8 +12,9 @@ contract CommunityVesting is TokenVesting {
     constructor(
         address token,
         address beneficiary,
-        address owner
+        address owner,
+        uint256 released
     )
-        TokenVesting(token, beneficiary, owner, 1608163200, 0, 86400 * 30 * 119)
+        TokenVesting(token, beneficiary, owner, 1608163200, 0, 86400 * 30 * 119, released)
     {}
 }

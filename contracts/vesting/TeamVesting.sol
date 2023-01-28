@@ -13,5 +13,5 @@ contract TeamVesting is TokenVesting {
         address token,
         address beneficiary,
         address owner
-    ) TokenVesting(token, beneficiary, owner, 1639699200, 0, 94608000) {}
+    ) TokenVesting(token, beneficiary, owner, 1639699200, 0, 94608000, 0) {}
 }

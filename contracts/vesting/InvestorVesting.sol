@@ -13,5 +13,5 @@ contract InvestorVesting is TokenVesting {
         address token,
         address beneficiary,
         address owner
-    ) TokenVesting(token, beneficiary, owner, 1608163200, 0, 86400 * 30 * 11) {}
+    ) TokenVesting(token, beneficiary, owner, 1608163200, 0, 86400 * 30 * 11, 0) {}
 }
