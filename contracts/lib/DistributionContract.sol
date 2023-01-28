@@ -41,10 +41,17 @@ contract DistributionContract is Ownable {
     _;
   }
 
-  constructor(address _token, uint256 _timestamp, uint256 _noOfRemaingDays) {
+  constructor(
+    address _token,
+    uint256 _timestamp,
+    uint256 _noOfRemaingDays,
+    address _owner
+  ) {
     token = IERC20(_token);
     initialTimestamp = _timestamp;
     noOfRemaingDays = _noOfRemaingDays;
+
+    _transferOwnership(_owner);
   }
 
   /// @dev Adds investors. This function doesn't limit max gas consumption,

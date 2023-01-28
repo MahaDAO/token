@@ -7,5 +7,10 @@
     "abi": "CommunityVesting",
     "verified": true,
     "address": "0xFdf0d51ddD34102472D7130c3d4831BC77386e78"
+  },
+  "MahaTeamDistribution": {
+    "abi": "MahaTeamDistribution",
+    "verified": false,
+    "address": "0x6C423094508c463520684900520C8E45E1A51A0b"
   }
 }
