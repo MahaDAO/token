@@ -62,19 +62,23 @@ const config: HardhatUserConfig & any = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+        url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ARB}`,
       },
-      accounts: [
-        {
-          balance: "100000000000000000000",
-          privateKey: process.env.PRIVATE_KEY,
-        },
-      ],
+      // accounts: [
+      //   {
+      //     balance: "100000000000000000000",
+      //     privateKey: process.env.PRIVATE_KEY,
+      //   },
+      // ],
+    },
+    arbitrum: {
+      url: `https://arb-mainnet.g.alchemy.com/v2/Pm5HPy74LXdxdHPfFOYlRaVaxgL_SE84`,
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     ethereum: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
       gasPrice: 14000000000,
-      // `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
@@ -101,6 +105,7 @@ const config: HardhatUserConfig & any = {
       mainnet: process.env.ETHERSCAN_API_KEY,
       goerli: process.env.ETHERSCAN_API_KEY,
       polygon: process.env.POLYGONSCAN_API_KEY,
+      arbitrumOne: process.env.ARBISCAN_API_KEY,
     },
   },
 };

@@ -3,57 +3,51 @@
 //
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-import hre, { ethers } from "hardhat";
-import { wait } from "./utils";
+import { BigNumber } from "ethers";
+import { ethers } from "hardhat";
+import { deployOrLoadAndVerify } from "./utils";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
 
-  console.log("deploying token", deployer.address);
-  const ARTHValuecoin = await ethers.getContractAt(
+  const gnosisProxy = "0x575e143702a015d09F298663405d1eD7fD20f0dD";
+  const admin = "0x77cd66d59ac48a0E7CE54fF16D9235a5fffF335E";
+
+  console.log("Deploying MahaToken...", deployer.address);
+
+  const MahaToken = await ethers.getContractFactory("MahaToken");
+  const implementation = await deployOrLoadAndVerify(
+    "MahaTokenImpl",
     "MahaToken",
-    "0x745407c86DF8DB893011912d3aB28e68B62E49B0"
+    []
   );
 
-  // await ARTHValuecoin.grantRole(
-  //   "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6",
-  //   "0x6357edbfe5ada570005ceb8fad3139ef5a8863cc"
-  // );
+  // deploy as proxy
+  console.log("Deploying proxy...");
+  const initDecode = MahaToken.interface.encodeFunctionData("initialize", [
+    deployer.address,
+  ]);
 
-  // await ARTHValuecoin.grantRole(
-  //   "0x0000000000000000000000000000000000000000000000000000000000000000",
-  //   "0x6357edbfe5ada570005ceb8fad3139ef5a8863cc"
-  // );
-
-  // await ARTHValuecoin.grantRole(
-  //   "0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a",
-  //   "0x6357edbfe5ada570005ceb8fad3139ef5a8863cc"
-  // );
-
-  await ARTHValuecoin.renounceRole(
-    "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6",
-    "0x2B6D96826dfBC212aeAb6748ca10d71039A518f0"
-  );
-  await ARTHValuecoin.renounceRole(
-    "0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a",
-    "0x2B6D96826dfBC212aeAb6748ca10d71039A518f0"
-  );
-  await ARTHValuecoin.renounceRole(
-    "0x0000000000000000000000000000000000000000000000000000000000000000",
-    "0x2B6D96826dfBC212aeAb6748ca10d71039A518f0"
+  const proxy = await deployOrLoadAndVerify(
+    "MahaToken",
+    "TransparentUpgradeableProxy",
+    [implementation.address, gnosisProxy, initDecode]
   );
 
-  // const token = await ARTHValuecoin.deploy();
-  // await token.deployed();
-  // console.log("token deployed to:", token.address);
-  // await wait(15 * 1000);
+  const instance = await ethers.getContractAt("MahaToken", proxy.address);
+  console.log("MahaToken deployed at", instance.address);
 
-  // verify token contract
-  await hre.run("verify:verify", {
-    address: "0x745407c86DF8DB893011912d3aB28e68B62E49B0",
-  });
+  const e18 = BigNumber.from(10).pow(18);
 
-  process.exit();
+  // mint 200k maha
+  console.log("mint 200k maha");
+  await instance.mint(admin, e18.mul(200000));
+
+  // transfer ownership to gnosis safe
+  console.log("transfer ownership");
+  await instance.transferOwnership(gnosisProxy);
+
+  console.log("done");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

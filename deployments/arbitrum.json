@@ -1,0 +1,12 @@
+{
+  "MahaTokenImpl": {
+    "abi": "MahaToken",
+    "verified": true,
+    "address": "0x227A445fF220cC9C3584Fe77B7DfEF6af0B63E8E"
+  },
+  "MahaToken": {
+    "abi": "TransparentUpgradeableProxy",
+    "verified": true,
+    "address": "0xEB99748e91AfCA94a6289db3b02E7ef4a8f0A22d"
+  }
+}
