@@ -1,28 +1,57 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
-import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
+import "../lib/ERC20.sol";
+import "../lib/Ownable.sol";
+import "../lib/Pausable.sol";
+import "../lib/ERC20Permit.sol";
+import "../proxy/VersionedInitializable.sol";
 
-contract MahaToken is ERC20PresetMinterPauser, ERC20Permit {
-  constructor()
-    ERC20PresetMinterPauser("MahaDAO", "MAHA")
-    ERC20Permit("MahaDAO")
-  {
-    _mint(msg.sender, 10_000_000 * 1e18); // mint 10 mil MAHA tokens
-  }
+/**
+ * Implementation of the MahaDAO token
+ */
+contract MahaToken is
+    VersionedInitializable,
+    ERC20,
+    Pausable,
+    ERC20Permit,
+    Ownable
+{
+    function initialize(address owner) external payable initializer {
+        initializeERC20("MahaDAO", "MAHA");
+        initializePausable();
+        initializeOwnable(owner);
+        initializeERC20Permit("MahaDAO");
+    }
 
-  // function setNameSymbol(string memory name, string memory symbol) external onlyRole(DEFAULT_ADMIN_ROLE) {
-  //     _name = name;
-  //     _symbol = symbol;
-  // }
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override {
+        super._beforeTokenTransfer(from, to, amount);
+        require(address(to) != address(this), "dont send to token contract");
+        require(!paused(), "ERC20Pausable: token transfer while paused");
+    }
 
-  function _beforeTokenTransfer(
-    address from,
-    address to,
-    uint256 amount
-  ) internal virtual override(ERC20, ERC20PresetMinterPauser) {
-    super._beforeTokenTransfer(from, to, amount);
-  }
+    function burn(uint256 _amount) external {
+        _burn(_msgSender(), _amount);
+    }
+
+    function burnFrom(address who, uint256 _amount) external onlyOwner {
+        _burn(who, _amount);
+    }
+
+    function togglePause() external onlyOwner {
+        if (!paused()) _pause();
+        else _unpause();
+    }
+
+    function mint(address _to, uint256 _amount) external onlyOwner {
+        _mint(_to, _amount);
+    }
+
+    function getRevision() public pure virtual override returns (uint256) {
+        return 0;
+    }
 }
