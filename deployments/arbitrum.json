@@ -8,5 +8,15 @@
     "abi": "TransparentUpgradeableProxy",
     "verified": true,
     "address": "0xEB99748e91AfCA94a6289db3b02E7ef4a8f0A22d"
+  },
+  "ARTHValuecoinImpl": {
+    "abi": "ARTHValuecoinProxyImpl",
+    "verified": true,
+    "address": "0x853573811B7CB8C189299C82f279A2F65a8DcfA3"
+  },
+  "ARTHValuecoin": {
+    "abi": "TransparentUpgradeableProxy",
+    "verified": false,
+    "address": "0x5441695f4445E40900b4c4B0Fb3eD2B9E51601A6"
   }
 }
